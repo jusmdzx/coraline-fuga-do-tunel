@@ -54,4 +54,10 @@ Se quiser rodar o jogo no seu computador para estudar o código:
 
 1. Clone este repositório:
    ```bash
-   git clone [https://github.com/seu-usuario/coraline-fuga-do-tunel.git](https://github.com/seu-usuario/coraline-fuga-do-tunel.git)
+   git clone  https://jusmdzx.github.io/coraline-fuga-do-tunel/
+
+
+   🎨 Créditos e Assets
+Imagens e Áudios: Baseados na obra "Coraline" (Laika Studios). Este é um projeto de fã sem fins lucrativos.
+
+Desenvolvido por: [Juliana Miranda]
