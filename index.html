@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Coraline: Fuga do Túnel</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="favicon.icon"> 
+</head>
+<body>
+    <div id="game-container">
+        <div id="vignette"></div>
+        <div id="tunnel-bg"></div>
+        
+        <div id="score-container">
+            <span style="font-size: 30px">🧵</span> <span id="score">0</span> <br>
+            <span id="time">⏳ 0s</span>
+            <div id="keys-display" style="font-size: 0.8em; margin-top: 5px;">
+                🗝️ <span id="key-count">0</span>/3
+            </div>
+        </div>
+
+        <button id="rank-btn" style="position: absolute; top: 15px; right: 15px; z-index: 50; padding: 10px; font-size: 24px; background: rgba(0,0,0,0.5); border: 2px solid #b026ff; border-radius: 50%; cursor: pointer;">🏆</button>
+
+        <div id="bird">
+            <img src="coraline-voando.png" alt="Coraline">
+        </div>
+
+        <div id="items-container"></div>
+
+        <div id="start-screen" class="screen active">
+            <h1>O Outro Mundo</h1>
+            <p id="start-msg">Toque para escapar!</p>
+        </div>
+
+        <div id="ranking-screen" class="screen">
+            <h1>Melhores Almas</h1>
+            <ul id="ranking-list">
+                <li>Conjurando...</li>
+            </ul>
+            <button onclick="closeRanking()">Voltar</button>
+        </div>
+
+        <div id="game-over-screen" class="screen">
+            <h1>Costurada!</h1>
+            <p>Almas coletadas: <span id="final-score" style="color:#b0ff26">0</span></p>
+            
+            <div id="save-score-area">
+                <input type="text" id="player-name" placeholder="Seu Nome" maxlength="10">
+                <button id="save-btn">Salvar no Ranking</button>
+            </div>
+
+            <p style="font-size: 0.9em; color: #dcb3ff; margin-top: 15px;">
+                Seu Recorde Pessoal: <span id="best-score">0</span>
+            </p>
+
+            <button id="restart-btn">Tentar Escapar</button>
+        </div>
+    </div>
+
+    <audio id="bg-music" src="musica.mp3" loop></audio> 
+    <audio id="jump-sound" src="pulo.mp3"></audio>
+    <audio id="meow-sound" src="miau.mp3"></audio>
+    <audio id="key-sound" src="key.mp3"></audio> 
+    <audio id="shield-break-sound" src="break.mp3"></audio>
+
+    <script type="module" src="script.js"></script>
+</body>
+</html>
