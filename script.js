@@ -86,7 +86,7 @@ function updatePhysics() {
     }
 
     gravity = isMobile ? 0.35 : 0.45;
-    jumpStrength = isMobile ? -7.0 : -8; // Ajuste para mobile
+    jumpStrength = isMobile ? -7.0 : -8;
     
     const baseSpeed = window.innerWidth * 0.0045; 
     gameSpeed = Math.max(3, Math.min(baseSpeed * (isMobile ? 1.4 : 1.2), 8));
@@ -105,7 +105,7 @@ window.addEventListener('resize', () => {
     }
 });
 
-// === PAUSE AUTOMÁTICO ===
+// === PAUSE AUTOMÁTICO (CORRIGIDO) ===
 document.addEventListener("visibilitychange", () => {
     if (document.hidden && gameRunning) {
         gamePaused = true;
@@ -116,7 +116,10 @@ document.addEventListener("visibilitychange", () => {
     } else if (!document.hidden && gameRunning && gamePaused) {
         gamePaused = false;
         if (bgMusic) bgMusic.play().catch(()=>{});
-        loop();
+        
+        // REINICIA O LOOP COM SEGURANÇA
+        requestAnimationFrame(loop);
+        
         pipeGeneratorId = setInterval(generatePipes, isMobile ? 1800 : 1500);
         timeIntervalId = setInterval(() => { if(gameRunning) { time++; timeElement.textContent = `⏳ ${time}s`; }}, 1000);
     }
@@ -159,14 +162,19 @@ function startGame() {
         saveBtn.innerText = "Salvar no Ranking";
     }
     
-    // CORREÇÃO DE ÁUDIO NA PARTIDA
+    // ÁUDIO
     if (bgMusic) { 
         bgMusic.currentTime = 0; 
-        bgMusic.play().catch((e) => console.log("Áudio aguardando interação:", e));
+        bgMusic.play().catch((e) => console.log("Áudio:", e));
     }
 
     jump(); 
-    loop();
+    
+    // === CORREÇÃO CRUCIAL AQUI ===
+    // Usa requestAnimationFrame para iniciar o loop no tempo certo do navegador
+    // e garante que não duplique loops
+    cancelAnimationFrame(gameLoopId);
+    requestAnimationFrame(loop);
     
     clearInterval(pipeGeneratorId);
     pipeGeneratorId = setInterval(generatePipes, isMobile ? 1800 : 1500);
@@ -396,7 +404,6 @@ async function showRanking() {
     rankingList.innerHTML = "<li>Conjurando ranking...</li>";
 
     try {
-        // Aumentado para 100 para permitir rolagem e ver mais jogadores
         const q = query(collection(db, "ranking"), orderBy("score", "desc"), limit(100));
         const querySnapshot = await getDocs(q);
 
@@ -437,7 +444,7 @@ window.closeRanking = function() {
     startScreen.classList.add('active');
 };
 
-// === INPUTS & SCROLL CORRIGIDO ===
+// === INPUTS ===
 function jump() {
     if (!gameRunning) return;
     velocity = jumpStrength;
@@ -445,7 +452,6 @@ function jump() {
 }
 
 function actionInput(e) {
-    // FIX: Permite scroll no ranking list e uso de inputs
     if (e.target.tagName === 'BUTTON' || 
         e.target.tagName === 'INPUT' || 
         e.target.closest('button') || 
@@ -471,27 +477,20 @@ if (restartBtn) {
     restartBtn.addEventListener('touchstart', (e) => { e.stopPropagation(); startGame(); });
 }
 
-// === FIX: DESTRAVAR ÁUDIO (Auto-Unlock) ===
+// === FIX: UNLOCK AUDIO SIMPLIFICADO ===
+// Isso previne que o navegador trave o loop tentando tocar 5 sons de uma vez
 function unlockAudio() {
-    const sounds = [bgMusic, jumpSound, meowSound, keySound, shieldBreakSound];
-    sounds.forEach(sound => {
-        if(sound) {
-            sound.volume = sound === bgMusic ? 0.4 : 0; 
-            sound.play().then(() => {
-                if(sound !== bgMusic) {
-                    sound.pause();
-                    sound.currentTime = 0;
-                    sound.volume = 0.6;
-                }
-            }).catch(() => {});
-        }
-    });
-    // Remove listeners após a primeira interação
+    if(bgMusic) {
+        bgMusic.play().then(() => {
+            bgMusic.pause();
+            bgMusic.currentTime = 0;
+        }).catch(() => {});
+    }
+    // Remove listeners imediatamente para não pesar no processamento
     document.removeEventListener('touchstart', unlockAudio);
     document.removeEventListener('click', unlockAudio);
     document.removeEventListener('keydown', unlockAudio);
 }
-// Adiciona os ouvintes para destravar na primeira ação
 document.addEventListener('touchstart', unlockAudio, { once: true });
 document.addEventListener('click', unlockAudio, { once: true });
 document.addEventListener('keydown', unlockAudio, { once: true });
