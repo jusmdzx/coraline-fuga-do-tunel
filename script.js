@@ -173,16 +173,21 @@ function startGame() {
         saveBtn.innerText = "Salvar no Ranking";
     }
     
-    if (bgMusic) { bgMusic.currentTime = 0; bgMusic.play().catch(()=>{}); }
+    
+
+    // === ÁUDIO AQUI ===
+    if (bgMusic) { 
+        bgMusic.currentTime = 0; 
+        // Tenta tocar e se der erro (bloqueio), ignora sem travar o jogo
+        bgMusic.play().then(() => {
+            console.log("Música iniciada!");
+        }).catch((e) => {
+            console.log("Navegador bloqueou o áudio inicial:", e);
+        });
+    }
 
     jump(); // Pulo inicial automático
-    loop();
-    
-    clearInterval(pipeGeneratorId);
-    pipeGeneratorId = setInterval(generatePipes, isMobile ? 1800 : 1500);
-
-    clearInterval(timeIntervalId);
-    timeIntervalId = setInterval(() => { if(gameRunning && !gamePaused) { time++; timeElement.textContent = `⏳ ${time}s`; }}, 1000);
+    // ... (resto do código)
 }
 
 // === GAME LOOP ===
@@ -448,7 +453,7 @@ async function showRanking() {
     rankingList.innerHTML = "<li>Conjurando ranking...</li>";
 
     try {
-        const q = query(collection(db, "ranking"), orderBy("score", "desc"), limit(50));
+        const q = query(collection(db, "ranking"), orderBy("score", "desc"), limit(200));
         const querySnapshot = await getDocs(q);
 
         rankingList.innerHTML = "";
@@ -525,4 +530,35 @@ window.addEventListener('mousedown', actionInput);
 if (restartBtn) {
     restartBtn.addEventListener('click', startGame);
     restartBtn.addEventListener('touchstart', (e) => { e.stopPropagation(); startGame(); });
+
+
+    // === DESTRAVAR ÁUDIO ===
+function unlockAudio() {
+    // Tenta tocar todos os áudios bem baixinho e pausa logo em seguida
+    // Isso diz pro navegador: "O usuário deixou tocar som!"
+    const sounds = [bgMusic, jumpSound, meowSound, keySound, shieldBreakSound];
+    
+    sounds.forEach(sound => {
+        if(sound) {
+            sound.volume = sound === bgMusic ? 0.4 : 0; // Mantém volume da música, zera os efeitos
+            sound.play().then(() => {
+                if(sound !== bgMusic) { // Pausa os efeitos, deixa a música se o jogo já começou
+                    sound.pause();
+                    sound.currentTime = 0;
+                    sound.volume = 0.6; // Restaura volume original dos efeitos
+                }
+            }).catch(() => {});
+        }
+    });
+
+    // Remove este desbloqueador para não rodar de novo
+    document.removeEventListener('touchstart', unlockAudio);
+    document.removeEventListener('click', unlockAudio);
+    document.removeEventListener('keydown', unlockAudio);
+}
+
+// Adiciona os ouvintes para destravar na primeira ação
+document.addEventListener('touchstart', unlockAudio, { once: true });
+document.addEventListener('click', unlockAudio, { once: true });
+document.addEventListener('keydown', unlockAudio, { once: true });
 }
