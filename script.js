@@ -77,30 +77,22 @@ let gameLoopId, pipeGeneratorId, timeIntervalId;
 
 if (bestScoreElement) bestScoreElement.textContent = localStorage.getItem('coralineBestScore') || 0;
 
-// === FÍSICA RESPONSIVA (PC vs MOBILE) ===
+// === FÍSICA RESPONSIVA ===
 function updatePhysics() {
     isMobile = window.innerWidth < 768;
     
-    // Atualiza texto de instrução
     if (startMsg) {
         startMsg.textContent = isMobile ? "Toque para escapar!" : "Pressione ESPAÇO ou Clique para escapar!";
     }
 
-    // Ajuste Fino de Gravidade
     gravity = isMobile ? 0.35 : 0.45;
+    jumpStrength = isMobile ? -7.0 : -8; // Ajuste para mobile
     
-    // Pulo ajustado para compensar input lag do mobile
-    jumpStrength = isMobile ? -7.0 : -8;
-    
-    // Velocidade baseada na largura da tela
     const baseSpeed = window.innerWidth * 0.0045; 
-    
-    // Travas de velocidade mínima (3) e máxima (8) para Desktop
     gameSpeed = Math.max(3, Math.min(baseSpeed * (isMobile ? 1.4 : 1.2), 8));
     
-    birdX = window.innerWidth * 0.2; // Posição X sempre 20% da tela
+    birdX = window.innerWidth * 0.2; 
 }
-// Chama a física ao iniciar e sempre que redimensionar a tela
 updatePhysics();
 
 window.addEventListener('resize', () => {
@@ -113,20 +105,17 @@ window.addEventListener('resize', () => {
     }
 });
 
-// === SISTEMA DE PAUSE AUTOMÁTICO (VISIBILITY API) ===
+// === PAUSE AUTOMÁTICO ===
 document.addEventListener("visibilitychange", () => {
     if (document.hidden && gameRunning) {
-        // Saiu da aba -> PAUSAR
         gamePaused = true;
         if (bgMusic) bgMusic.pause();
         clearInterval(pipeGeneratorId);
         clearInterval(timeIntervalId);
         cancelAnimationFrame(gameLoopId);
     } else if (!document.hidden && gameRunning && gamePaused) {
-        // Voltou -> RETOMAR
         gamePaused = false;
         if (bgMusic) bgMusic.play().catch(()=>{});
-        
         loop();
         pipeGeneratorId = setInterval(generatePipes, isMobile ? 1800 : 1500);
         timeIntervalId = setInterval(() => { if(gameRunning) { time++; timeElement.textContent = `⏳ ${time}s`; }}, 1000);
@@ -137,13 +126,11 @@ document.addEventListener("visibilitychange", () => {
 function startGame() {
     if (gameRunning) return;
 
-    // Limpeza
     document.querySelectorAll('.pipe').forEach(el => el.remove());
     document.querySelectorAll('.key-item').forEach(el => el.remove());
     gameContainer.classList.remove('shake-effect');
     bird.classList.remove('bird-dead', 'has-shield', 'immune');
 
-    // === RESET COMPLETO ===
     gameRunning = true;
     gamePaused = false;
     velocity = 0; 
@@ -163,7 +150,6 @@ function startGame() {
     scoreElement.textContent = score;
     timeElement.textContent = `⏳ 0s`;
     
-    // UI
     startScreen.classList.remove('active');
     gameOverScreen.classList.remove('active');
     if(rankingScreen) rankingScreen.classList.remove('active');
@@ -173,42 +159,37 @@ function startGame() {
         saveBtn.innerText = "Salvar no Ranking";
     }
     
-    
-
-    // === ÁUDIO AQUI ===
+    // CORREÇÃO DE ÁUDIO NA PARTIDA
     if (bgMusic) { 
         bgMusic.currentTime = 0; 
-        // Tenta tocar e se der erro (bloqueio), ignora sem travar o jogo
-        bgMusic.play().then(() => {
-            console.log("Música iniciada!");
-        }).catch((e) => {
-            console.log("Navegador bloqueou o áudio inicial:", e);
-        });
+        bgMusic.play().catch((e) => console.log("Áudio aguardando interação:", e));
     }
 
-    jump(); // Pulo inicial automático
-    // ... (resto do código)
+    jump(); 
+    loop();
+    
+    clearInterval(pipeGeneratorId);
+    pipeGeneratorId = setInterval(generatePipes, isMobile ? 1800 : 1500);
+
+    clearInterval(timeIntervalId);
+    timeIntervalId = setInterval(() => { if(gameRunning && !gamePaused) { time++; timeElement.textContent = `⏳ ${time}s`; }}, 1000);
 }
 
 // === GAME LOOP ===
 function loop() {
     if (!gameRunning || gamePaused) return;
 
-    // Aplica gravidade
     velocity += gravity;
-    if (velocity > 12) velocity = 12; // Terminal velocity
+    if (velocity > 12) velocity = 12; 
     birdY += velocity;
 
-    // Rotação visual
     let targetRotation = velocity < 0 ? -25 : Math.min(velocity * 4, 90);
     rotation += (targetRotation - rotation) * 0.15;
 
     bird.style.transform = `translate3d(${birdX}px, ${birdY}px, 0) rotate(${rotation}deg)`;
 
-    // Colisão Chão/Teto
     if (birdY >= window.innerHeight - 10 || birdY <= 0) endGame();
 
-    // Move Fundo
     bgPosition -= gameSpeed * 0.5;
     if (tunnelBg) tunnelBg.style.backgroundPositionX = `${bgPosition}px`;
 
@@ -218,11 +199,10 @@ function loop() {
     gameLoopId = requestAnimationFrame(loop);
 }
 
-// === GERADORES (RESPONSIVOS) ===
+// === GERADORES ===
 function generatePipes() {
     if (!gameRunning || gamePaused) return;
 
-    // GAP: Espaço entre os canos
     const minGap = 160;
     let gap = window.innerHeight * 0.28; 
     if (gap < minGap) gap = minGap;
@@ -231,9 +211,7 @@ function generatePipes() {
     const maxPipeHeight = window.innerHeight - gap - minPipeHeight;
     const topHeight = Math.floor(Math.random() * (maxPipeHeight - minPipeHeight + 1)) + minPipeHeight;
     
-    // Largura visual e colisão
     const pipeWidth = window.innerWidth * 0.14; 
-    const visualWidth = Math.min(pipeWidth, 100); 
 
     const topPipe = document.createElement('div');
     topPipe.className = 'pipe top-pipe';
@@ -243,7 +221,6 @@ function generatePipes() {
     bottomPipe.className = 'pipe bottom-pipe';
     bottomPipe.style.height = `${window.innerHeight - topHeight - gap}px`;
     
-    // Gato (30% chance)
     if (Math.random() < 0.3) {
         const cat = document.createElement('div');
         cat.className = 'cat-npc cat-sitting';
@@ -254,12 +231,10 @@ function generatePipes() {
     gameContainer.appendChild(topPipe);
     gameContainer.appendChild(bottomPipe);
 
-    // Chave (30% chance)
     if (!hasExtraLife && keysCollected < 3 && Math.random() < 0.3) {
         spawnKey(window.innerWidth + 50, topHeight + (gap/2));
     }
 
-    // Colisão aproximada baseada no CSS
     const collisionWidth = isMobile ? (window.innerWidth * 0.14) : 80; 
 
     pipes.push({ 
@@ -280,25 +255,16 @@ function movePipes() {
         pipeObj.bottomElement.style.transform = `translate3d(${pipeObj.x}px, 0, 0)`;
 
         if (checkMathCollision(pipeObj)) {
-            if (isImmune) { 
-                // Imune, ignora colisão
-            } else if (hasExtraLife) { 
-                useExtraLife(); 
-            } else { 
-                endGame(); 
-            }
+            if (isImmune) { } else if (hasExtraLife) { useExtraLife(); } else { endGame(); }
         }
         
-        // Pontuação
         if (pipeObj.x + pipeObj.width < birdX && !pipeObj.passed) {
             score++;
             scoreElement.textContent = score;
             pipeObj.passed = true;
-            // Aumenta dificuldade gradualmente
             if (score % 5 === 0) gameSpeed += 0.2;
         }
 
-        // Limpeza de canos fora da tela
         if (pipeObj.x < -200) {
             pipeObj.topElement.remove();
             pipeObj.bottomElement.remove();
@@ -309,8 +275,8 @@ function movePipes() {
 
 function checkMathCollision(pipeObj) {
     const vmin = Math.min(window.innerWidth, window.innerHeight);
-    const birdSize = vmin * 0.06; // Tamanho estimado do pássaro
-    const hitPadding = birdSize * 0.3; // Tolerância de colisão (hitbox menor que sprite)
+    const birdSize = vmin * 0.06; 
+    const hitPadding = birdSize * 0.3; 
     
     const bLeft = birdX + hitPadding;
     const bRight = birdX + birdSize - hitPadding;
@@ -320,9 +286,7 @@ function checkMathCollision(pipeObj) {
     const pLeft = pipeObj.x;
     const pRight = pipeObj.x + pipeObj.width;
     
-    // Verifica sobreposição Horizontal
     if (bRight > pLeft && bLeft < pRight) {
-        // Verifica sobreposição Vertical (Cano Cima OU Cano Baixo)
         if (bTop < pipeObj.topHeight || bBottom > (pipeObj.topHeight + pipeObj.gap)) return true;
     }
     return false;
@@ -340,10 +304,7 @@ function moveKeys() {
     keys.forEach((k, i) => {
         k.x -= gameSpeed;
         k.element.style.transform = `translate3d(${k.x}px, ${k.y}px, 0)`;
-        
-        // Coleta
         if (Math.abs(k.x - birdX) < 40 && Math.abs(k.y - birdY) < 40) collectKey(i);
-        // Remove se saiu da tela
         else if (k.x < -50) { k.element.remove(); keys.splice(i, 1); }
     });
 }
@@ -352,31 +313,14 @@ function collectKey(index) {
         keys[index].element.remove();
         keys.splice(index, 1);
         if (keySound) { keySound.currentTime = 0; keySound.play().catch(()=>{}); }
-        
-        if (!hasExtraLife) { 
-            keysCollected++; 
-            if (keysCollected >= 3) activateExtraLife(); 
-            updateKeyUI(); 
-        }
+        if (!hasExtraLife) { keysCollected++; if (keysCollected >= 3) activateExtraLife(); updateKeyUI(); }
     }
 }
-function activateExtraLife() { 
-    hasExtraLife = true; 
-    keysCollected = 3; 
-    bird.classList.add('has-shield'); 
-}
+function activateExtraLife() { hasExtraLife = true; keysCollected = 3; bird.classList.add('has-shield'); }
 function useExtraLife() {
-    hasExtraLife = false; 
-    keysCollected = 0; 
-    updateKeyUI(); 
-    bird.classList.remove('has-shield');
-    
+    hasExtraLife = false; keysCollected = 0; updateKeyUI(); bird.classList.remove('has-shield');
     if (shieldBreakSound) shieldBreakSound.play().catch(()=>{});
-    
-    isImmune = true; 
-    bird.classList.add('immune'); 
-    gameContainer.classList.add('shake-effect');
-    
+    isImmune = true; bird.classList.add('immune'); gameContainer.classList.add('shake-effect');
     setTimeout(() => gameContainer.classList.remove('shake-effect'), 500);
     setTimeout(() => { isImmune = false; bird.classList.remove('immune'); }, 1500);
 }
@@ -403,7 +347,6 @@ function endGame() {
     }
     if (bestScoreElement) bestScoreElement.textContent = currentBest;
 
-    // Memória de Nome
     const savedName = localStorage.getItem('coralinePlayerName');
     if (savedName && playerNameInput) {
         playerNameInput.value = savedName;
@@ -415,7 +358,7 @@ function endGame() {
     setTimeout(() => gameOverScreen.classList.add('active'), 500);
 }
 
-// === RANKING FIREBASE ===
+// === RANKING ===
 if(saveBtn) {
     saveBtn.addEventListener('click', async () => {
         const name = playerNameInput.value.trim().toUpperCase();
@@ -438,7 +381,7 @@ if(saveBtn) {
             showRanking(); 
         } catch (e) {
             console.error("Erro ao salvar:", e);
-            alert("Erro de conexão. Verifique se o domínio foi autorizado no Firebase.");
+            alert("Erro de conexão (Netlify/Firebase).");
             saveBtn.disabled = false;
             saveBtn.innerText = "Salvar no Ranking";
         }
@@ -453,7 +396,8 @@ async function showRanking() {
     rankingList.innerHTML = "<li>Conjurando ranking...</li>";
 
     try {
-        const q = query(collection(db, "ranking"), orderBy("score", "desc"), limit(200));
+        // Aumentado para 100 para permitir rolagem e ver mais jogadores
+        const q = query(collection(db, "ranking"), orderBy("score", "desc"), limit(100));
         const querySnapshot = await getDocs(q);
 
         rankingList.innerHTML = "";
@@ -463,8 +407,7 @@ async function showRanking() {
         querySnapshot.forEach((doc) => {
             const data = doc.data();
             
-            // Filtra nomes duplicados no visual, mostrando apenas o melhor score
-            if (!nomesVistos.has(data.name) && position <= 10) {
+            if (!nomesVistos.has(data.name)) {
                 const li = document.createElement("li");
                 li.innerHTML = `<span>#${position} ${data.name}</span> <span>${data.score} pts</span>`;
                 rankingList.appendChild(li);
@@ -478,7 +421,7 @@ async function showRanking() {
 
     } catch (e) {
         console.error("Erro ranking:", e);
-        rankingList.innerHTML = "<li>Erro de conexão ou permissão.</li>";
+        rankingList.innerHTML = "<li>Erro de conexão.</li>";
     }
 }
 
@@ -494,7 +437,7 @@ window.closeRanking = function() {
     startScreen.classList.add('active');
 };
 
-// === INPUTS ===
+// === INPUTS & SCROLL CORRIGIDO ===
 function jump() {
     if (!gameRunning) return;
     velocity = jumpStrength;
@@ -502,27 +445,23 @@ function jump() {
 }
 
 function actionInput(e) {
-    // 1. IGNORA BOTÕES, INPUTS E A LISTA DE RANKING (Permite o scroll funcionar)
+    // FIX: Permite scroll no ranking list e uso de inputs
     if (e.target.tagName === 'BUTTON' || 
         e.target.tagName === 'INPUT' || 
-        e.target.closest('button') ||
-        e.target.closest('#ranking-list')) { // <--- LINHA NOVA: Deixa o scroll passar
-        return;
+        e.target.closest('button') || 
+        e.target.closest('#ranking-list')) { 
+        return; 
     }
 
-    // 2. Previne comportamento padrão (zoom/scroll) no resto do jogo
     if (e.type === 'touchstart' && e.cancelable) e.preventDefault(); 
     
-    // 3. Verificações de estado
     if (rankingScreen.classList.contains('active')) return;
     if (gameOverScreen.classList.contains('active')) return;
 
-    // 4. Ação
     if (!gameRunning && startScreen.classList.contains('active')) startGame();
     else if (gameRunning) jump();
 }
 
-// Listeners Universais
 window.addEventListener('touchstart', actionInput, { passive: false });
 window.addEventListener('keydown', (e) => { if (e.code === 'Space') actionInput(e); });
 window.addEventListener('mousedown', actionInput);
@@ -530,35 +469,29 @@ window.addEventListener('mousedown', actionInput);
 if (restartBtn) {
     restartBtn.addEventListener('click', startGame);
     restartBtn.addEventListener('touchstart', (e) => { e.stopPropagation(); startGame(); });
+}
 
-
-    // === DESTRAVAR ÁUDIO ===
+// === FIX: DESTRAVAR ÁUDIO (Auto-Unlock) ===
 function unlockAudio() {
-    // Tenta tocar todos os áudios bem baixinho e pausa logo em seguida
-    // Isso diz pro navegador: "O usuário deixou tocar som!"
     const sounds = [bgMusic, jumpSound, meowSound, keySound, shieldBreakSound];
-    
     sounds.forEach(sound => {
         if(sound) {
-            sound.volume = sound === bgMusic ? 0.4 : 0; // Mantém volume da música, zera os efeitos
+            sound.volume = sound === bgMusic ? 0.4 : 0; 
             sound.play().then(() => {
-                if(sound !== bgMusic) { // Pausa os efeitos, deixa a música se o jogo já começou
+                if(sound !== bgMusic) {
                     sound.pause();
                     sound.currentTime = 0;
-                    sound.volume = 0.6; // Restaura volume original dos efeitos
+                    sound.volume = 0.6;
                 }
             }).catch(() => {});
         }
     });
-
-    // Remove este desbloqueador para não rodar de novo
+    // Remove listeners após a primeira interação
     document.removeEventListener('touchstart', unlockAudio);
     document.removeEventListener('click', unlockAudio);
     document.removeEventListener('keydown', unlockAudio);
 }
-
 // Adiciona os ouvintes para destravar na primeira ação
 document.addEventListener('touchstart', unlockAudio, { once: true });
 document.addEventListener('click', unlockAudio, { once: true });
 document.addEventListener('keydown', unlockAudio, { once: true });
-}

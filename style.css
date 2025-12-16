@@ -19,10 +19,10 @@ body {
     width: 100vw;
     height: 100dvh; 
     overflow: hidden;
-    cursor: crosshair; /* Cursor legal para Desktop */
+    cursor: crosshair; 
 }
 
-/* === FUNDO OTIMIZADO === */
+/* === FUNDO === */
 #tunnel-bg {
     position: absolute;
     top: 0; left: 0;
@@ -32,10 +32,10 @@ body {
         linear-gradient(to right, rgba(0,0,0,0.4) 0%, transparent 15%, transparent 85%, rgba(0,0,0,0.4) 100%),
         url('tunel.jpg'); 
     background-repeat: repeat-x;
-    background-size: cover; /* Garante cobertura total */
+    background-size: cover; 
     background-position: center;
     opacity: 0.85;
-    will-change: background-position; /* Otimização GPU */
+    will-change: background-position;
 }
 
 #vignette {
@@ -67,7 +67,7 @@ body {
     min-width: 30px; min-height: 30px;
     top: 0; left: 0;
     z-index: 10;
-    will-change: transform; /* CRUCIAL: Otimização de Performance */
+    will-change: transform; 
 }
 
 #bird img {
@@ -97,12 +97,12 @@ body {
     background: repeating-linear-gradient(135deg, #1a052e, #1a052e 15px, #36085e 15px, #36085e 30px);
     border: 2px solid #b026ff;
     box-shadow: 0 0 15px #5e16a1, inset 0 0 20px #000;
-    will-change: transform; /* CRUCIAL: Otimização de Performance */
+    will-change: transform; 
 }
 .top-pipe { top: 0; border-bottom: 6px solid #b0ff26; border-radius: 0 0 20px 20px; }
 .bottom-pipe { bottom: 0; border-top: 6px solid #b0ff26; border-radius: 20px 20px 0 0; }
 
-/* === O GATO === */
+/* === GATO === */
 .cat-npc {
     position: absolute;
     top: -55px; 
@@ -131,7 +131,7 @@ body {
     will-change: transform;
 }
 
-/* === TELAS GERAIS === */
+/* === TELAS === */
 .screen {
     position: absolute;
     width: 100%; height: 100%;
@@ -155,7 +155,7 @@ h1 {
 }
 p { color: #ccc; font-size: clamp(1rem, 3vw, 1.5rem); margin-bottom: 20px; text-align: center; }
 
-/* === RANKING STYLING === */
+/* === RANKING COM SCROLL FIX === */
 #ranking-screen {
     background: rgba(5, 0, 10, 0.95);
     backdrop-filter: blur(5px);
@@ -171,9 +171,9 @@ p { color: #ccc; font-size: clamp(1rem, 3vw, 1.5rem); margin-bottom: 20px; text-
     padding: 0;
     width: 90%;
     max-width: 500px;
-    max-height: 50vh; /* Ajuste para caber em telas menores */
-    overflow-y: auto;
-    touch-action: pan-y; /* Permite rolar com o dedo nesta lista específica */
+    max-height: 50vh; 
+    overflow-y: auto; /* Permite scroll */
+    touch-action: pan-y; /* FIX: Permite arrastar com o dedo */
     background: linear-gradient(180deg, rgba(40, 0, 60, 0.6) 0%, rgba(10, 0, 20, 0.8) 100%);
     border: 3px dashed #b026ff;
     border-radius: 15px;
@@ -199,7 +199,6 @@ p { color: #ccc; font-size: clamp(1rem, 3vw, 1.5rem); margin-bottom: 20px; text-
 #ranking-list li:nth-child(2) { color: #c0c0c0; border-left: 5px solid #c0c0c0; } 
 #ranking-list li:nth-child(3) { color: #cd7f32; border-left: 5px solid #cd7f32; } 
 
-/* INPUT E BOTÕES */
 #save-score-area {
     display: flex; flex-direction: column; gap: 10px;
     margin-bottom: 20px; width: 80%; max-width: 300px;
@@ -249,10 +248,10 @@ button:active { transform: scale(0.95); }
 }
 .shake-effect { animation: shake 0.4s; }
 
-/* === MEDIA QUERIES === */
+/* === MOBILE === */
 @media (max-width: 768px) {
     .pipe {
-        box-shadow: none !important; /* Remove sombras pesadas no mobile */
+        box-shadow: none !important; 
         border-width: 1px !important;
     }
     #bird img { filter: none !important; }
