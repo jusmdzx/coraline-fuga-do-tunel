@@ -10,8 +10,8 @@ Um jogo estilo *Endless Runner* (como Flappy Bird) temático do filme **Coraline
 
 ## 🎮 Jogue Agora
 
-👉 **[Clique aqui para jogar](https://seu-usuario.github.io/coraline-fuga-do-tunel/)**
-*(Substitua o link acima pelo link gerado no GitHub Pages)*
+👉 **[Clique aqui para jogar]( https://jusmdzx.github.io/coraline-fuga-do-tunel/)**
+
 
 ---
 
