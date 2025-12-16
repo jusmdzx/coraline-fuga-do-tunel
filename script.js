@@ -497,10 +497,15 @@ function jump() {
 }
 
 function actionInput(e) {
-    // 1. IGNORA BOTÕES E INPUTS DE TEXTO
-    if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT' || e.target.closest('button')) return;
+    // 1. IGNORA BOTÕES, INPUTS E A LISTA DE RANKING (Permite o scroll funcionar)
+    if (e.target.tagName === 'BUTTON' || 
+        e.target.tagName === 'INPUT' || 
+        e.target.closest('button') ||
+        e.target.closest('#ranking-list')) { // <--- LINHA NOVA: Deixa o scroll passar
+        return;
+    }
 
-    // 2. Previne comportamento padrão (zoom/scroll)
+    // 2. Previne comportamento padrão (zoom/scroll) no resto do jogo
     if (e.type === 'touchstart' && e.cancelable) e.preventDefault(); 
     
     // 3. Verificações de estado

@@ -173,6 +173,7 @@ p { color: #ccc; font-size: clamp(1rem, 3vw, 1.5rem); margin-bottom: 20px; text-
     max-width: 500px;
     max-height: 50vh; /* Ajuste para caber em telas menores */
     overflow-y: auto;
+    touch-action: pan-y; /* Permite rolar com o dedo nesta lista específica */
     background: linear-gradient(180deg, rgba(40, 0, 60, 0.6) 0%, rgba(10, 0, 20, 0.8) 100%);
     border: 3px dashed #b026ff;
     border-radius: 15px;
