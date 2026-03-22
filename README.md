@@ -60,4 +60,4 @@ Se quiser rodar o jogo no seu computador para estudar o código:
    🎨 Créditos e Assets
 Imagens e Áudios: Baseados na obra "Coraline" (Laika Studios). Este é um projeto de fã sem fins lucrativos.
 
-Desenvolvido por: [Juliana Miranda]
+Desenvolvido por: Juliana Miranda
